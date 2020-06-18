@@ -70,6 +70,7 @@ void exfat_statfs(void)
     int ret=0;
     char mnt_pnt[128] = {0,};
     int found = 0;
+    int i = 0;
 
     if (!(proc_fd = fopen(MOUNTS_INFO, "r"))) {
         printf("Failed to open %s. err:%s(%d)\n", MOUNTS_INFO, strerror(errno), errno);
@@ -78,16 +79,17 @@ void exfat_statfs(void)
 
     printf("----------------------------- statfs info ----------------------------\n");
     while(fgets(buf, sizeof(buf), proc_fd)) {
-        if(strstr(buf, "exfat") && strstr(buf, "media_rw")) {
+        if(strstr(buf, "exfat") && (strstr(buf, partition_path) || strstr(buf, "media_rw"))) {
             str = strtok(buf, " ");
             while (str != NULL) {
-                if (strstr(str, "media_rw")) {
+                if (i == 1) {   // index 1 means mount point in /proc/mounts
                     strcpy(mnt_pnt, str);
                     printf("Device Mount Point\t\t\t: %s\n", mnt_pnt);
                     found = 1;
                     break;
                 }
                 str = strtok(NULL, " ");
+                i++;
             }
         }
     }
