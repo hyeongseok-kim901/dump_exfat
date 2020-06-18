@@ -1,12 +1,17 @@
 # dump_exfat
+```
 debugging tool for exfat filesystem
+```
 
 # Building dump_exfat
+```
 cd into dump_exfat directory:
     (Change Makefile to use your compiler)
     make
+```
 
 # Usage
+```
 Usage : ./dump_exfat [-bcdfht] [file_path]
     -b : print Boot sector in hex mode
         command) dump_exfat -b
@@ -23,3 +28,4 @@ Usage : ./dump_exfat [-bcdfht] [file_path]
         command) dump_exfat -h
     -t : print FAT Table
         command) dump_exfat -t
+```
