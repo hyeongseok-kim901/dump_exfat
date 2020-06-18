@@ -10,4 +10,4 @@ $(TARGET) : $(OBJECTS)
 	$(CC) -o $(TARGET) $(OBJECTS) $(CFLAGS)
 	rm $(OBJECTS)
 
-main.o : dump_exfat.c dump_exfat.h
+dump_exfat.o : dump_exfat.c dump_exfat.h
