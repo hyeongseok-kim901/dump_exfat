@@ -10,6 +10,7 @@
 
 #define EXFAT_DEBUG 0
 
+char partition_path[256] = {0,};
 char fs_name[9] = {0,};
 long long vol_length=0;
 int fat_offset=0;
@@ -492,8 +493,8 @@ void get_fat_table(void)
 
 void start_prog(void)
 {
-    if (!(dev_fd = fopen(DEV_MMC, "rb"))) {
-        printf("File open failed. ERR : %s(%d)\n", strerror(errno), errno);
+    if (!(dev_fd = fopen(partition_path, "rb"))) {
+        printf("Failed to open %s : %s(%d)\n", partition_path, strerror(errno), errno);
         exit(-1);
     }
 }
@@ -508,22 +509,22 @@ void finish_prog(void)
 
 static void usage(const char *progname)
 {
-    printf("Usage : %s [-bcdfht] [file_path]\n", progname);
+    printf("Usage : %s [-bcdfht] [file_path] [partition_path]\n", progname);
     printf("   -b : print Boot sector in hex mode\n");
-    printf("        command) dump_exfat -b\n");
+    printf("        command) dump_exfat -b /dev/block/mmcblk0p1\n");
     printf("   -c : print Cluster bit map info and map in hex mode\n");
-    printf("        command) dump_exfat -c\n");
+    printf("        command) dump_exfat -c /dev/block/mmcblk0p1\n");
     printf("   -d : dump(extract) file. will work with -f option automatically.\n");
-    printf("        command) dump_exfat -d [file_path]\n");
-    printf("        eg)      dump_exfat -d /abc/12345\n");
+    printf("        command) dump_exfat -d [file_path] [partition_path]\n");
+    printf("        eg)      dump_exfat -d /abc/12345 /dev/block/mmcblk0p1\n");
     printf("   -f : travel File path to get dentry info\n");
-    printf("        command) dump_exfat -f [file_path]\n");
+    printf("        command) dump_exfat -f [file_path] [partition_path]\n");
     printf("        eg)      If you want to extract file 12345 under directory abc, use below command\n");
-    printf("                 dump_exfat -f /abc/12345\n");
+    printf("                 dump_exfat -f /abc/12345 /dev/block/mmcblk0p1\n");
     printf("   -h : print Help usage\n");
     printf("        command) dump_exfat -h\n");
     printf("   -t : print FAT Table\n");
-    printf("        command) dump_exfat -t\n");
+    printf("        command) dump_exfat -t /dev/block/mmcblk0p1\n");
     exit(-1);
 }
 
@@ -563,6 +564,13 @@ int main(int argc, char *argv[])
             default:
                 usage(argv[0]);
         }
+
+    memcpy(partition_path, argv[argc-1], strlen(argv[argc-1]));
+
+    if (argc < 2) {
+        printf("Please check your exfat partition path.(eg. mmcblk0p1)\n");
+        usage(argv[0]);
+    }
 
     start_prog();
 

@@ -27,7 +27,6 @@
 #define BOOT_SIG_OFFSET 109
 #define BOOT_SIG_LENGTH 1
 
-#define DEV_MMC "/dev/block/mmcblk0p1"
 #define MOUNTS_INFO "/proc/mounts"
 
 #define MAX_NAME_LENGTH         255 /* max len of file name excluding NULL */
