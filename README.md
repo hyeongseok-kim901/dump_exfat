@@ -26,6 +26,11 @@ Usage : ./dump_exfat [-bcdfht] [file_path] [partition_path]
                  dump_exfat -f /abc/12345 /dev/block/mmcblk0p1
     -h : print Help usage
         command) dump_exfat -h
+    -m : support mount mode
+        enter debugfs_exfat prompt and can listup file or change directory like shell.
+        it does not use mount system call.
+        command) dump_exfat -m /dev/block/mmcblk0p1
+        usable command in prompt) ls(or ll), cd, pwd, exit(or q or quit)
     -t : print FAT Table
         command) dump_exfat -t /dev/block/mmcblk0p1
 ```

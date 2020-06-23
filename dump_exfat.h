@@ -67,6 +67,7 @@ struct dentry {
     char type;
     char generalsecondaryflags;
     char name_len;
+    char f_name[MAX_NAME_LENGTH*2+1];
     unsigned short file_attribute;
     unsigned short name_hash;
     unsigned int first_cluster;
@@ -86,3 +87,5 @@ void get_cluster_bit_map_dentry(void);
 void get_fat_table(void);
 void find_clusters(char generalsecondaryflags, unsigned int first_cluster, unsigned long long data_length, char *file_name, unsigned short file_attribute, int dump_file);
 static void usage(const char *progname);
+UInt16 NameHash(WCHAR * FileName, UCHAR   NameLength);
+void debugfs_main(void);

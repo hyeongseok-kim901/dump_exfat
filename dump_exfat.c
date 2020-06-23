@@ -525,6 +525,11 @@ static void usage(const char *progname)
     printf("                 dump_exfat -f /abc/12345 /dev/block/mmcblk0p1\n");
     printf("   -h : print Help usage\n");
     printf("        command) dump_exfat -h\n");
+    printf("   -m : support mount mode\n");
+    printf("        enter debugfs_exfat prompt and can listup file or change directory like shell.\n");
+    printf("        it does not use mount system call.\n");
+    printf("        command) dump_exfat -m /dev/block/mmcblk0p1\n");
+    printf("        usable command in prompt) ls(or ll), cd, pwd, exit(or q or quit)\n");
     printf("   -t : print FAT Table\n");
     printf("        command) dump_exfat -t /dev/block/mmcblk0p1\n");
     exit(-1);
@@ -539,9 +544,10 @@ int main(int argc, char *argv[])
     int travel_file_dentry = 0;
     int print_fat_table = 0;
     int dump_file = 0;
+    int mount_mode = 0;
     char f_path[1531] = {0,}; // max length : 1530
 
-    while ((c = getopt(argc, argv, "cbd:f:ht")) != EOF)
+    while ((c = getopt(argc, argv, "cbd:f:hmt")) != EOF)
         switch (c) {
             case 'b':
                 print_boot_sector = 1;
@@ -559,6 +565,9 @@ int main(int argc, char *argv[])
                 break;
             case 'h':
                 usage(argv[0]);
+                break;
+            case 'm':
+                mount_mode = 1;
                 break;
             case 't':
                 print_fat_table = 1;
@@ -604,6 +613,10 @@ int main(int argc, char *argv[])
         get_fat_table();
         hex_print(fat_table, fat_length);
         printf("======================================================================\n");
+    }
+
+    if (mount_mode) {
+        debugfs_main();
     }
 
     finish_prog();
