@@ -22,6 +22,8 @@ extern int first_cluster_of_root_dir;
 extern FILE *dev_fd; // Use device fd as global, otherwise I need to open many time
 extern char *fat_table; // FAT Table is needed for showing, file lookup and so on. Just read at once.
 
+int show_del_file = 0;
+
 struct current {
     char pwd[1531];
     unsigned long long de_addr;
@@ -98,10 +100,11 @@ void do_command_ls(void)
     int f_name_offset = 0;
     int i = 0, j = 0, k =0;
     char asciiname[MAX_NAME_LENGTH+1] = {0,};
+    int deleted = 0;
 
-    printf("d\t%d\t.\n", cluster_size);
+    printf("d %12d\t.\n", cluster_size);
     if (strlen(current->pwd) != 1)
-        printf("d\t%d\t..\n", cluster_size);
+        printf("d %12d\t..\n", cluster_size);
 
     do {
         fseek(dev_fd, current->de_addr+j, SEEK_SET);
@@ -109,12 +112,14 @@ void do_command_ls(void)
         do {
             sum_of_dentries++;
             memcpy(&de.type, buf+i, sizeof(char));
-            if (de.type == EXFAT_FILE) {
+            if (de.type == EXFAT_FILE || de.type == (EXFAT_FILE&EXFAT_DELETE)) {
+                if (de.type == (EXFAT_FILE&EXFAT_DELETE))
+                    deleted = 1;
                 memcpy(&de.file_attribute, buf+4+i, sizeof(unsigned short));
-            } else if (de.type == EXFAT_STREAM) {
+            } else if (de.type == EXFAT_STREAM || de.type == (EXFAT_STREAM&EXFAT_DELETE)) {
                 memcpy(&de.name_len, buf+3+i, sizeof(char));
                 memcpy(&de.data_length, buf+24+i, sizeof(unsigned long long));
-            } else if (de.type == EXFAT_NAME) {
+            } else if (de.type == EXFAT_NAME || de.type == (EXFAT_NAME&EXFAT_DELETE)) {
                 memcpy(de.f_name+f_name_offset, buf+2+i, 30);
                 f_name_offset += 30;
                 if (de.name_len <= f_name_offset/2) {
@@ -122,9 +127,18 @@ void do_command_ls(void)
                         if (k%2 != 1)
                             asciiname[k/2] = de.f_name[k];
                     }
-                    printf("%c\t", de.file_attribute & ATTR_SUBDIR ? 'd' : '-');
-                    printf("%lld\t", de.data_length);
-                    printf("%s\n", asciiname);
+                    if (deleted) {
+                        deleted = 0;
+                        if (show_del_file) {
+                            printf("%c ", de.file_attribute & ATTR_SUBDIR ? 'd' : '-');
+                            printf("%12lld\t", de.data_length);
+                            printf("%s\t(deleted)\n", asciiname);
+                        }
+                    } else {
+                        printf("%c ", de.file_attribute & ATTR_SUBDIR ? 'd' : '-');
+                        printf("%12lld\t", de.data_length);
+                        printf("%s\n", asciiname);
+                    }
                     f_name_offset = 0;
                     memset(asciiname, 0, sizeof(asciiname));
                 }
@@ -150,6 +164,7 @@ void do_command_cd(char *dir, int len)
     int i = 0, j = 0;
     char buf[512] = {0,};
     int sum_of_dentries = 0;
+    int deleted = 0;
 
     if (!strncmp(dir, "/", 1) && len == 1) {
         while (!del_node()) {}
@@ -183,9 +198,11 @@ void do_command_cd(char *dir, int len)
         do {
             sum_of_dentries++;
             memcpy(&de.type, buf+i, sizeof(char));
-            if (de.type == EXFAT_FILE) {
+            if (de.type == EXFAT_FILE || de.type == (EXFAT_FILE&EXFAT_DELETE)) {
+                if (de.type == (EXFAT_FILE&EXFAT_DELETE))
+                    deleted = 1;
                 memcpy(&de.file_attribute, buf+4+i, sizeof(unsigned short));
-            } else if (de.type == EXFAT_STREAM) {
+            } else if (de.type == EXFAT_STREAM || de.type == (EXFAT_STREAM&EXFAT_DELETE)) {
                 memcpy(&de.name_hash, buf+4+i, sizeof(unsigned short));
                 memcpy(&de.first_cluster, buf+20+i, sizeof(unsigned int));
             } else {
@@ -196,7 +213,11 @@ void do_command_cd(char *dir, int len)
                 found=1;
                 // Change current dentry address
                 if (de.file_attribute & ATTR_SUBDIR) {
-                    add_node(dir, len, (cluster_heap_offset*sector_size)+(de.first_cluster-2)*cluster_size);
+                    if (show_del_file) {
+                        add_node(dir, len, (cluster_heap_offset*sector_size)+(de.first_cluster-2)*cluster_size);
+                        deleted = 0;
+                    } else
+                        add_node(dir, len, (cluster_heap_offset*sector_size)+(de.first_cluster-2)*cluster_size);
                 } else
                     printf("%s is not directory\n", dir);
                 break;
@@ -220,32 +241,65 @@ void do_command_pwd(void)
     printf("current working directory : %s\n", current->pwd);
 }
 
+void do_command_get_env(char *env_name, int len)
+{
+    if (!strncmp(env_name, "del", 3) && len == 3)
+        printf("%s\n", show_del_file?"enabled":"disabled");
+}
+
+void do_command_set_env(char *env_name, int env_len, char *val, int val_len)
+{
+    if (!strncmp(env_name, "del", 3) && env_len == 3)
+        if((!strncmp(val, "1", 1) || !strncmp(val, "0", 1)) && val_len == 1)
+            show_del_file = atoi(val);
+        else
+            printf("%s is invalid. \"set del\" shold have 1 or 0.\n", val);
+    else
+        printf("%s is invalid parameter.\n");
+}
+
+void do_command_help(void)
+{
+    printf("Usable command list\n");
+    printf("    cd [dir]            : change directory\n");
+    printf("    ls|ll               : listup file\n");
+    printf("    get [var]           : get environment value\n");
+    printf("    set [var] [val]     : set environment value\n");
+    printf("    - get/set del [0|1] : show deleted file together\n");
+    printf("    pwd                 : print present working directory\n");
+    printf("    exit|q|quit         : exit program\n");
+    printf("    help                : print usable command list\n\n");
+}
+
 void execute_line(char *buf)
 {
     char *str = NULL;
     int i = 0;
     char command[32] = {0,};
-    char param_dir[MAX_NAME_LENGTH+1] = {0,};
+    char param_1[MAX_NAME_LENGTH+1] = {0,};
+    char param_2[MAX_NAME_LENGTH+1] = {0,};
 
     str = strtok(buf, " ");
     while (str != NULL) {
         if (!i) {
             memcpy(command, str, strlen(str));
-            i++;
         } else if(i == 1) {
-            memcpy(param_dir, str, strlen(str));
+            memcpy(param_1, str, strlen(str));
+        } else if(i == 2) {
+            memcpy(param_2, str, strlen(str));
         }
+        i++;
         str = strtok(NULL, " ");
     }
 
     if (!strncmp(command, "exit", 4) || !strncmp(command, "q", 1) ||!strncmp(command, "quit", 4))
         do_command_exit();
-    else if (!strncmp(command, "ls", 2) || !strncmp(command, "ll", 2))
+    else if (!strncmp(command, "ls", 2) || !strncmp(command, "ll", 2)) {
         do_command_ls();
-    else if (!strncmp(command, "cd", 2)) {
-        if (!strncmp(param_dir, "/", 1) && strlen(param_dir) == 1)
-            do_command_cd(param_dir, strlen(param_dir));
-        str = strtok(param_dir, "/");
+    } else if (!strncmp(command, "cd", 2)) {
+        if (!strncmp(param_1, "/", 1) && strlen(param_1) == 1)
+            do_command_cd(param_1, strlen(param_1));
+        str = strtok(param_1, "/");
         while (str != NULL) {
             //printf("[DEBUG] strtok:%s, len:%d\n", str, strlen(str));
             do_command_cd(str, strlen(str));
@@ -253,6 +307,12 @@ void execute_line(char *buf)
         }
     } else if (!strncmp(command, "pwd", 3))
         do_command_pwd();
+    else if (!strncmp(command, "get", 3))
+        do_command_get_env(param_1, strlen(param_1));
+    else if (!strncmp(command, "set", 3))
+        do_command_set_env(param_1, strlen(param_1), param_2, strlen(param_2));
+    else if (!strncmp(command, "help", 4))
+        do_command_help();
     else
         printf("%s : unknown command\n", command);
 }
@@ -272,6 +332,7 @@ void debugfs_main(void)
 
     while (!feof(fd)) {
         printf("debugfs_exfat: %s # ", current->pwd);
+        memset(buf, 0, sizeof(buf));
         if (fgets(buf, sizeof(buf), stdin) == NULL)
             break;
         if (cp = strchr(buf, '\n'))

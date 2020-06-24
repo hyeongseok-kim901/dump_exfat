@@ -529,7 +529,7 @@ static void usage(const char *progname)
     printf("        enter debugfs_exfat prompt and can listup file or change directory like shell.\n");
     printf("        it does not use mount system call.\n");
     printf("        command) dump_exfat -m /dev/block/mmcblk0p1\n");
-    printf("        usable command in prompt) ls(or ll), cd, pwd, exit(or q or quit)\n");
+    printf("        usable command in prompt) ls(or ll), cd, exit etc\n");
     printf("   -t : print FAT Table\n");
     printf("        command) dump_exfat -t /dev/block/mmcblk0p1\n");
     exit(-1);

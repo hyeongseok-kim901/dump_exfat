@@ -30,7 +30,7 @@ Usage : ./dump_exfat [-bcdfht] [file_path] [partition_path]
         enter debugfs_exfat prompt and can listup file or change directory like shell.
         it does not use mount system call.
         command) dump_exfat -m /dev/block/mmcblk0p1
-        usable command in prompt) ls(or ll), cd, pwd, exit(or q or quit)
+        usable command in prompt) ls(or ll), cd, exit etc
     -t : print FAT Table
         command) dump_exfat -t /dev/block/mmcblk0p1
 ```
