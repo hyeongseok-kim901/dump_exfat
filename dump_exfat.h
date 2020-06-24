@@ -30,6 +30,7 @@
 #define MOUNTS_INFO "/proc/mounts"
 
 #define MAX_NAME_LENGTH         255 /* max len of file name excluding NULL */
+#define MAX_PATH_LENGTH         1530 /* we can get this value from statfs */
 
 #define DENTRY_SIZE     32 /* directory entry size */
 /* exFAT allows 8388608(256MB) directory entries */

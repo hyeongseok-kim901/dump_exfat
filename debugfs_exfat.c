@@ -25,7 +25,7 @@ extern char *fat_table; // FAT Table is needed for showing, file lookup and so o
 int show_del_file = 0;
 
 struct current {
-    char pwd[1531];
+    char pwd[MAX_PATH_LENGTH+1];
     unsigned long long de_addr;
     struct current *next;
     struct current *prev;
@@ -142,7 +142,7 @@ void do_command_ls(void)
                     f_name_offset = 0;
                     memset(asciiname, 0, sizeof(asciiname));
                 }
-            } else if (&de.type == 0x00) {
+            } else if (&de.type == EXFAT_UNUSED) {
                 break;
             } else {
                 i+=DENTRY_SIZE; // for 1 dentry
@@ -223,10 +223,10 @@ void do_command_cd(char *dir, int len)
                 break;
             }
             i+=DENTRY_SIZE; // for 1 dentry
-        } while(i<sizeof(buf) && (de.type != 0x00));
+        } while(i<sizeof(buf) && (de.type != EXFAT_UNUSED));
 
         j+=sizeof(buf); // for 1 sector
-    } while(de.type != 0x00 && !found && (sum_of_dentries < MAX_EXFAT_DENTRIES));
+    } while(de.type != EXFAT_UNUSED && !found && (sum_of_dentries < MAX_EXFAT_DENTRIES));
 
     if (!found) {
         if (strlen(current->pwd) == 1)

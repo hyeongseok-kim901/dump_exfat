@@ -396,7 +396,7 @@ void lookup_file_path(char *f_path, int f_len, int dump_file)
                     break;
                 }
                 i+=DENTRY_SIZE; // for 1 dentry
-            } while (i<sizeof(buf) && (de.type != 0x00));
+            } while (i<sizeof(buf) && (de.type != EXFAT_UNUSED));
             if (found) {
                 next_addr = (de.first_cluster-2)*cluster_size;
                 printf("Stream Dentry Addr\t: 0x%X Byte\nName Hash\t\t: 0x%02X\nData Size\t\t: %lld Byte\nFile Attribute\t\t: 0x%02X\n", cluster_heap_addr+j+i, de.name_hash, de.data_length, de.file_attribute);
@@ -412,7 +412,7 @@ void lookup_file_path(char *f_path, int f_len, int dump_file)
                 break;
             }
             j+=sizeof(buf); // for 1 sector
-        } while (de.type != 0x00 && !found && (sum_of_dentries < MAX_EXFAT_DENTRIES));
+        } while (de.type != EXFAT_UNUSED && !found && (sum_of_dentries < MAX_EXFAT_DENTRIES));
 
         if ((!de.type && !found) || (sum_of_dentries >= MAX_EXFAT_DENTRIES)) {
             printf("*** There is no such file or directory ***\n");
@@ -459,7 +459,7 @@ void get_cluster_bit_map_dentry(void)
             break;
         }
         i+=DENTRY_SIZE;
-    } while (de.type != 0x00 && !found);
+    } while (de.type != EXFAT_UNUSED && !found);
 
     buf = (char *)malloc(de.data_length);
     if (!buf) {
@@ -545,7 +545,7 @@ int main(int argc, char *argv[])
     int print_fat_table = 0;
     int dump_file = 0;
     int mount_mode = 0;
-    char f_path[1531] = {0,}; // max length : 1530
+    char f_path[MAX_PATH_LENGTH+1] = {0,};
 
     while ((c = getopt(argc, argv, "cbd:f:hmt")) != EOF)
         switch (c) {
