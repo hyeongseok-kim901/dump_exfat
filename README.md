@@ -26,7 +26,7 @@ Build steps for arm:
     cd into dump_exfat directory:
     ./autogen.sh
     ./configure --target=ARM64 --host=aarch64-linux-gnu CFLAGS=-static
-    make LDFLAGS="-all-static"
+    make LDFLAGS="-static"
 ```
 
 # Usage
