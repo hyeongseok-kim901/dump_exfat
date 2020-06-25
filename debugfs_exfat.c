@@ -142,7 +142,7 @@ void do_command_ls(void)
                     f_name_offset = 0;
                     memset(asciiname, 0, sizeof(asciiname));
                 }
-            } else if (&de.type == EXFAT_UNUSED) {
+            } else if (de.type == EXFAT_UNUSED) {
                 break;
             } else {
                 i+=DENTRY_SIZE; // for 1 dentry
@@ -255,7 +255,7 @@ void do_command_set_env(char *env_name, int env_len, char *val, int val_len)
         else
             printf("%s is invalid. \"set del\" shold have 1 or 0.\n", val);
     else
-        printf("%s is invalid parameter.\n");
+        printf("%s is invalid parameter.\n", env_name);
 }
 
 void do_command_help(void)
@@ -335,9 +335,9 @@ void debugfs_main(void)
         memset(buf, 0, sizeof(buf));
         if (fgets(buf, sizeof(buf), stdin) == NULL)
             break;
-        if (cp = strchr(buf, '\n'))
+        if ((cp = strchr(buf, '\n')))
             *cp = 0;
-        if (cp = strchr(buf, '\r'))
+        if ((cp = strchr(buf, '\r')))
             *cp = 0;
         if (!strlen(buf))
             continue;

@@ -87,6 +87,5 @@ void lookup_file_path(char *f_path, int f_len, int dump_file);
 void get_cluster_bit_map_dentry(void);
 void get_fat_table(void);
 void find_clusters(char generalsecondaryflags, unsigned int first_cluster, unsigned long long data_length, char *file_name, unsigned short file_attribute, int dump_file);
-static void usage(const char *progname);
 UInt16 NameHash(WCHAR * FileName, UCHAR   NameLength);
 void debugfs_main(void);

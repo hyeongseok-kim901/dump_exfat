@@ -67,7 +67,7 @@ void exfat_statfs(void)
     char buf[512] = {0,};
     char *str;
     struct statfs es; // exfat_statfs
-    int ret=0;
+//    int ret=0;
     char mnt_pnt[128] = {0,};
     int found = 0;
     int i = 0;
@@ -103,16 +103,16 @@ void exfat_statfs(void)
         //printf("ret=%d, bsize:%ld, blocks:%lld, free:%lld, available:%lld, total_file_node:%lld, free_file_node:%lld, max_name_length:%ld, mount_flags:0x%08X\n", ret, es.f_bsize, es.f_blocks, es.f_bfree, es.f_bavail, es.f_files, es.f_ffree, es.f_namelen, es.f_flags);
 
         /*Free Cluster count*/
-        printf("Free Cluster Count\t\t\t: %lld\n", es.f_bfree);
+        printf("Free Cluster Count\t\t\t: %lu\n", es.f_bfree);
 
         /*Available Cluster count*/
-        printf("Available Cluster Count\t\t\t: %lld\n", es.f_bavail);
+        printf("Available Cluster Count\t\t\t: %lu\n", es.f_bavail);
 
         /*Max File name length*/
         printf("Max File Name Length\t\t\t: %ld\n", es.f_namelen);
 
         /*Mount flags*/
-        printf("Mount flags\t\t\t\t: 0x%08X\n", es.f_flags);
+        printf("Mount flags\t\t\t\t: 0x%08lX\n", es.f_flags);
     }
 }
 
@@ -162,7 +162,7 @@ void meta_print(char *buf)
     /*FirstClusterOfRootDirectory*/
     memcpy(&first_cluster_of_root_dir, buf+FIRST_CLUSTER_OF_ROOT_DIR_OFFSET, FIRST_CLUSTER_OF_ROOT_DIR_LENGTH);
     printf("FirstClusterOfRootDirectory\t\t%Xh\t%d\t%d\n", FIRST_CLUSTER_OF_ROOT_DIR_OFFSET, FIRST_CLUSTER_OF_ROOT_DIR_LENGTH, first_cluster_of_root_dir);
-    printf("FirstClusterOfRootDirectory(Address)\t%Xh\t%d\t0x%llX Byte\n", FIRST_CLUSTER_OF_ROOT_DIR_OFFSET, FIRST_CLUSTER_OF_ROOT_DIR_LENGTH, (cluster_heap_offset*sector_size)+(first_cluster_of_root_dir-2)*cluster_size);
+    printf("FirstClusterOfRootDirectory(Address)\t%Xh\t%d\t0x%X Byte\n", FIRST_CLUSTER_OF_ROOT_DIR_OFFSET, FIRST_CLUSTER_OF_ROOT_DIR_LENGTH, (cluster_heap_offset*sector_size)+(first_cluster_of_root_dir-2)*cluster_size);
 
     /*VolumeFlags*/
     memcpy(volume_flags, buf+VOLUME_FLAG_OFFSET, VOLUME_FLAG_LENGTH);
@@ -207,7 +207,9 @@ void find_clusters(char generalsecondaryflags, unsigned int first_cluster, unsig
     unsigned int current_cluster = 0;
     unsigned int next_cluster = 0;
     unsigned int offset = 0;
+#if EXFAT_DEBUG
     int skip_print = 0;
+#endif
     char *buf = NULL;
     int count = 0;
     FILE *out_fd = NULL;
@@ -277,9 +279,9 @@ void find_clusters(char generalsecondaryflags, unsigned int first_cluster, unsig
 #endif
 #if 1
             if(next_cluster == EXFAT_EOF_CLUSTER)
-                printf("%ld ", current_cluster);
+                printf("%u ", current_cluster);
             else
-                printf("%ld, ", current_cluster);
+                printf("%u, ", current_cluster);
 #else
             if (current_cluster == next_cluster-1 || next_cluster == EXFAT_EOF_CLUSTER/*for single cluster file*/) {
                 if (!skip_print) {
@@ -308,7 +310,7 @@ void find_clusters(char generalsecondaryflags, unsigned int first_cluster, unsig
 
             current_cluster = next_cluster;
         }
-        printf("(total:%ld, NoFatChain:0)\n", tot_clusters);
+        printf("(total:%u, NoFatChain:0)\n", tot_clusters);
 
         if ((file_attribute & ATTR_ARCHIVE) && dump_file) {
             free(buf);
@@ -336,7 +338,7 @@ void lookup_file_path(char *f_path, int f_len, int dump_file)
 
     str = strtok(f_path, "/");
     while (str != NULL) {
-        printf("File\t\t\t: %s\nFile Name Length\t: %d\n", str, strlen(str));
+        printf("File\t\t\t: %s\nFile Name Length\t: %zu\n", str, strlen(str));
         uniname = (char *)malloc(strlen(str)*2);
         memset(uniname, 0, strlen(str)*2);
         for(i=0; i<strlen(str)*2; i++) {
@@ -399,9 +401,9 @@ void lookup_file_path(char *f_path, int f_len, int dump_file)
             } while (i<sizeof(buf) && (de.type != EXFAT_UNUSED));
             if (found) {
                 next_addr = (de.first_cluster-2)*cluster_size;
-                printf("Stream Dentry Addr\t: 0x%X Byte\nName Hash\t\t: 0x%02X\nData Size\t\t: %lld Byte\nFile Attribute\t\t: 0x%02X\n", cluster_heap_addr+j+i, de.name_hash, de.data_length, de.file_attribute);
+                printf("Stream Dentry Addr\t: 0x%llX Byte\nName Hash\t\t: 0x%02X\nData Size\t\t: %lld Byte\nFile Attribute\t\t: 0x%02X\n", cluster_heap_addr+j+i, de.name_hash, de.data_length, de.file_attribute);
                 if (de.first_cluster) {
-                    printf("1st Cluster\t\t: 0x%04X (%lld)\n", de.first_cluster, de.first_cluster);
+                    printf("1st Cluster\t\t: 0x%04X (%u)\n", de.first_cluster, de.first_cluster);
                 }
 #if EXFAT_DEBUG
                 printf("Add_addr_for_child\t: 0x%08X\n", next_addr);
