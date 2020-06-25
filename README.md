@@ -4,10 +4,29 @@ debugging tool for exfat filesystem
 ```
 
 # Building dump_exfat
+Prerequisite packages:
 ```
-cd into dump_exfat directory:
-    (Change Makefile to use your compiler)
+For Ubuntu:
+    sudo apt-get install autoconf libtool pkg-config
+```
+
+Build steps:
+```
+    cd into dump_exfat directory:
+    ./autogen.sh
+    ./configure
     make
+```
+
+Build steps for arm:
+```
+    go to https://releases.linaro.org/components/toolchain/binaries/
+    download toolchain & set path
+
+    cd into dump_exfat directory:
+    ./autogen.sh
+    ./configure --target=ARM64 --host=aarch64-linux-gnu CFLAGS=-static
+    make LDFLAGS="-all-static"
 ```
 
 # Usage
