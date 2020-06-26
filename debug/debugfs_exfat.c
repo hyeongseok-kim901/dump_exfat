@@ -88,7 +88,7 @@ int del_node(void)
 
 void do_command_exit(void)
 {
-    printf(">> exit dump_exfat <<\n");
+    printf(">> exit debug.exfat <<\n");
     exit(0);
 }
 

@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT(debug.exfat, 0.1.1, joohyung.lee@lge.com)
+AC_INIT(debug.exfat, 0.1.1, intriangle@gmail.com)
 AC_CONFIG_SRCDIR([debug/debugfs_exfat.c])
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS([config.h])

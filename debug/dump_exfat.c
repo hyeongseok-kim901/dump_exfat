@@ -515,25 +515,25 @@ static void usage(const char *progname)
 {
     printf("Usage : %s [-bcdfht] [file_path] [partition_path]\n", progname);
     printf("   -b : print Boot sector in hex mode\n");
-    printf("        command) dump_exfat -b /dev/block/mmcblk0p1\n");
+    printf("        command) debug.exfat -b /dev/block/mmcblk0p1\n");
     printf("   -c : print Cluster bit map info and map in hex mode\n");
-    printf("        command) dump_exfat -c /dev/block/mmcblk0p1\n");
+    printf("        command) debug.exfat -c /dev/block/mmcblk0p1\n");
     printf("   -d : dump(extract) file. will work with -f option automatically.\n");
-    printf("        command) dump_exfat -d [file_path] [partition_path]\n");
-    printf("        eg)      dump_exfat -d /abc/12345 /dev/block/mmcblk0p1\n");
+    printf("        command) debug.exfat -d [file_path] [partition_path]\n");
+    printf("        eg)      debug.exfat -d /abc/12345 /dev/block/mmcblk0p1\n");
     printf("   -f : travel File path to get dentry info\n");
-    printf("        command) dump_exfat -f [file_path] [partition_path]\n");
+    printf("        command) debug.exfat -f [file_path] [partition_path]\n");
     printf("        eg)      If you want to extract file 12345 under directory abc, use below command\n");
-    printf("                 dump_exfat -f /abc/12345 /dev/block/mmcblk0p1\n");
+    printf("                 debug.exfat -f /abc/12345 /dev/block/mmcblk0p1\n");
     printf("   -h : print Help usage\n");
-    printf("        command) dump_exfat -h\n");
+    printf("        command) debug.exfat -h\n");
     printf("   -m : support mount mode\n");
     printf("        enter debugfs_exfat prompt and can listup file or change directory like shell.\n");
     printf("        it does not use mount system call.\n");
-    printf("        command) dump_exfat -m /dev/block/mmcblk0p1\n");
+    printf("        command) debug.exfat -m /dev/block/mmcblk0p1\n");
     printf("        usable command in prompt) ls(or ll), cd, exit etc\n");
     printf("   -t : print FAT Table\n");
-    printf("        command) dump_exfat -t /dev/block/mmcblk0p1\n");
+    printf("        command) debug.exfat -t /dev/block/mmcblk0p1\n");
     exit(-1);
 }
 

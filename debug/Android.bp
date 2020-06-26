@@ -1,7 +1,7 @@
 // Copyright 2020 The Android Open Source Project
 
 cc_binary {
-    name: "dump_exfat",
+    name: "debug.exfat",
     static_executable: true,
     srcs: [
         "dump_exfat.c",
